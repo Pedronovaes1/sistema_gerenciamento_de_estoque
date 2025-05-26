@@ -1,0 +1,4 @@
+=== Histórico de Movimentações de Estoque ===
+MovimentacaoEstoque{data=2025-05-03, tipo='Entrada Inicial', quantidade=7, produto=Celular}
+MovimentacaoEstoque{data=2025-05-03, tipo='Entrada Inicial', quantidade=6, produto=Skate}
+MovimentacaoEstoque{data=2025-05-03, tipo='Saida', quantidade=2, produto=Celular}

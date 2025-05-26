@@ -1,0 +1,2 @@
+=== Relatório de Produtos em Estoque ===
+Produto{id=1, nome='Cuscuz', preco=2.3, quantidade=170, categoria='Alimento'}

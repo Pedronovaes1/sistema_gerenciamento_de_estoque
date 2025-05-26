@@ -1,0 +1,2 @@
+=== Relatório de Produtos com Estoque Baixo (Abaixo de 10 unidades) ===
+Nenhum produto com estoque baixo encontrado.
