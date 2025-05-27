@@ -101,60 +101,68 @@ public class EstoqueGUI extends JFrame {
     }
 
     private void cadastrarProdutoGUI() {
-        String nome = JOptionPane.showInputDialog(this, "Nome do Produto:", "Cadastrar Produto", JOptionPane.PLAIN_MESSAGE);
-        if (nome == null || nome.trim().isEmpty()) return;
+    JPanel panel = new JPanel(new GridLayout(0, 1));
+    JTextField nomeField = new JTextField();
+    JTextField categoriaField = new JTextField();
+    JTextField precoField = new JTextField();
+    JTextField quantidadeField = new JTextField();
 
-        if (estoque.buscarProdutoPorNome(nome) != null) {
-            JOptionPane.showMessageDialog(this, "Erro: Já existe um produto com o nome '" + nome + "'.", "Erro ao Cadastrar", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    panel.add(new JLabel("Nome do Produto:"));
+    panel.add(nomeField);
+    panel.add(new JLabel("Categoria do Produto:"));
+    panel.add(categoriaField);
+    panel.add(new JLabel("Preço do Produto (ex: 10.99):"));
+    panel.add(precoField);
+    panel.add(new JLabel("Quantidade Inicial:"));
+    panel.add(quantidadeField);
 
-        String categoria = JOptionPane.showInputDialog(this, "Categoria do Produto:", "Cadastrar Produto", JOptionPane.PLAIN_MESSAGE);
-        if (categoria == null || categoria.trim().isEmpty()) {
-            categoria = "Geral";
-        }
+    int result = JOptionPane.showConfirmDialog(this, panel, "Cadastrar Produto", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+    if (result != JOptionPane.OK_OPTION) return;
 
+    String nome = nomeField.getText().trim();
+    String categoria = categoriaField.getText().trim();
+    String precoStr = precoField.getText().trim();
+    String qtdStr = quantidadeField.getText().trim();
 
-        double preco;
-        try {
-            String precoStr = JOptionPane.showInputDialog(this, "Preço do Produto (ex: 10.99):", "Cadastrar Produto", JOptionPane.PLAIN_MESSAGE);
-            if (precoStr == null) return;
-            preco = Double.parseDouble(precoStr.replace(',', '.'));
-            if (preco < 0) {
-                JOptionPane.showMessageDialog(this, "Preço não pode ser negativo.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Preço inválido. Use ponto como separador decimal.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        int quantidade;
-        try {
-            String qtdStr = JOptionPane.showInputDialog(this, "Quantidade Inicial:", "Cadastrar Produto", JOptionPane.PLAIN_MESSAGE);
-            if (qtdStr == null) return;
-            quantidade = Integer.parseInt(qtdStr);
-            if (quantidade < 0) {
-                JOptionPane.showMessageDialog(this, "Quantidade inicial não pode ser negativa.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Quantidade inválida. Deve ser um número inteiro.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Produto novoProduto = estoque.adicionarProduto(nome, preco, quantidade, categoria); //
-        if (novoProduto != null) {
-            areaExibicao.setText("Produto '" + nome + "' cadastrado com sucesso com ID " + novoProduto.getId() + "!\n");
-            if (quantidade > 0) {
-                registrarMovimentacao(LocalDate.now(), "Entrada Inicial", quantidade, novoProduto); //
-                areaExibicao.append("Movimentação de entrada inicial registrada para '" + nome + "'.\n");
-            }
-            listarTodosProdutosGUI();
-        } else {
-            JOptionPane.showMessageDialog(this, "Falha ao cadastrar o produto.", "Erro ao Cadastrar", JOptionPane.ERROR_MESSAGE);
-        }
+    if (nome.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Nome do produto é obrigatório.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
     }
+    if (estoque.buscarProdutoPorNome(nome) != null) {
+        JOptionPane.showMessageDialog(this, "Já existe um produto com esse nome.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+    if (categoria.isEmpty()) categoria = "Geral";
+
+    double preco;
+    int quantidade;
+    try {
+        preco = Double.parseDouble(precoStr.replace(',', '.'));
+        if (preco < 0) throw new NumberFormatException();
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "Preço inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+    try {
+        quantidade = Integer.parseInt(qtdStr);
+        if (quantidade < 0) throw new NumberFormatException();
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "Quantidade inválida.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    Produto novoProduto = estoque.adicionarProduto(nome, preco, quantidade, categoria);
+    if (novoProduto != null) {
+        areaExibicao.setText("Produto '" + nome + "' cadastrado com sucesso!\n");
+        if (quantidade > 0) {
+            registrarMovimentacao(LocalDate.now(), "Entrada Inicial", quantidade, novoProduto);
+            areaExibicao.append("Movimentação de entrada inicial registrada para '" + nome + "'.\n");
+        }
+        listarTodosProdutosGUI();
+    } else {
+        JOptionPane.showMessageDialog(this, "Falha ao cadastrar o produto.", "Erro", JOptionPane.ERROR_MESSAGE);
+    }
+}
 
     private void atualizarProdutoGUI() {
         String nome = JOptionPane.showInputDialog(this, "Nome do produto a atualizar:", "Atualizar Produto", JOptionPane.PLAIN_MESSAGE);
@@ -209,8 +217,25 @@ public class EstoqueGUI extends JFrame {
     }
 
     private void registrarEntradaGUI() {
-        String nome = JOptionPane.showInputDialog(this, "Nome do produto para entrada:", "Registrar Entrada", JOptionPane.PLAIN_MESSAGE);
-        if (nome == null || nome.trim().isEmpty()) return;
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        JTextField nomeField = new JTextField();
+        JTextField quantidadeField = new JTextField();
+
+        panel.add(new JLabel("Nome do Produto:"));
+        panel.add(nomeField);
+        panel.add(new JLabel("Quantidade a adicionar:"));
+        panel.add(quantidadeField);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Registrar Entrada", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) return;
+
+        String nome = nomeField.getText().trim();
+        String qtdStr = quantidadeField.getText().trim();
+
+        if (nome.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nome do produto é obrigatório.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         Produto produto = estoque.buscarProdutoPorNome(nome);
         if (produto == null) {
@@ -220,8 +245,6 @@ public class EstoqueGUI extends JFrame {
 
         int quantidade;
         try {
-            String qtdStr = JOptionPane.showInputDialog(this, "Quantidade a adicionar:", "Registrar Entrada", JOptionPane.PLAIN_MESSAGE);
-            if (qtdStr == null) return;
             quantidade = Integer.parseInt(qtdStr);
             if (quantidade <= 0) {
                 JOptionPane.showMessageDialog(this, "Quantidade para entrada deve ser positiva.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
@@ -232,9 +255,9 @@ public class EstoqueGUI extends JFrame {
             return;
         }
 
-        boolean sucesso = estoque.registrarEntrada(nome, quantidade); //
+        boolean sucesso = estoque.registrarEntrada(nome, quantidade);
         if (sucesso) {
-            registrarMovimentacao(LocalDate.now(), "Entrada", quantidade, produto); //
+            registrarMovimentacao(LocalDate.now(), "Entrada", quantidade, produto);
             areaExibicao.setText("Entrada de " + quantidade + " unidades de '" + nome + "' registrada.\n");
             areaExibicao.append("Nova quantidade: " + produto.getQuantidade() + "\n");
             listarTodosProdutosGUI();
@@ -244,8 +267,25 @@ public class EstoqueGUI extends JFrame {
     }
 
     private void registrarSaidaGUI() {
-        String nome = JOptionPane.showInputDialog(this, "Nome do produto para saída:", "Registrar Saída", JOptionPane.PLAIN_MESSAGE);
-        if (nome == null || nome.trim().isEmpty()) return;
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        JTextField nomeField = new JTextField();
+        JTextField quantidadeField = new JTextField();
+
+        panel.add(new JLabel("Nome do Produto:"));
+        panel.add(nomeField);
+        panel.add(new JLabel("Quantidade a remover:"));
+        panel.add(quantidadeField);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Registrar Saída", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) return;
+
+        String nome = nomeField.getText().trim();
+        String qtdStr = quantidadeField.getText().trim();
+
+        if (nome.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nome do produto é obrigatório.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         Produto produto = estoque.buscarProdutoPorNome(nome);
         if (produto == null) {
@@ -255,8 +295,6 @@ public class EstoqueGUI extends JFrame {
 
         int quantidade;
         try {
-            String qtdStr = JOptionPane.showInputDialog(this, "Quantidade a remover:", "Registrar Saída", JOptionPane.PLAIN_MESSAGE);
-            if (qtdStr == null) return;
             quantidade = Integer.parseInt(qtdStr);
             if (quantidade <= 0) {
                 JOptionPane.showMessageDialog(this, "Quantidade para saída deve ser positiva.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
@@ -267,18 +305,16 @@ public class EstoqueGUI extends JFrame {
             return;
         }
 
-        boolean sucesso = estoque.registrarSaida(nome, quantidade); //
+        boolean sucesso = estoque.registrarSaida(nome, quantidade);
         if (sucesso) {
-            registrarMovimentacao(LocalDate.now(), "Saida", quantidade, produto); //
+            registrarMovimentacao(LocalDate.now(), "Saida", quantidade, produto);
             areaExibicao.setText("Saída de " + quantidade + " unidades de '" + nome + "' registrada.\n");
             areaExibicao.append("Nova quantidade: " + produto.getQuantidade() + "\n");
             listarTodosProdutosGUI();
         } else {
-
             JOptionPane.showMessageDialog(this, "Falha ao registrar saída para o produto '" + nome + "'.\nVerifique o console para detalhes (ex: estoque insuficiente).", "Erro na Saída", JOptionPane.ERROR_MESSAGE);
         }
     }
-
     private void buscarProdutoGUI() {
         String nome = JOptionPane.showInputDialog(this, "Nome do produto a buscar:", "Buscar Produto", JOptionPane.PLAIN_MESSAGE);
         if (nome == null || nome.trim().isEmpty()) return;
@@ -416,6 +452,15 @@ public class EstoqueGUI extends JFrame {
                 } catch (Exception e) {
                     System.err.println("Não foi possível definir o Look and Feel do sistema: " + e);
                 }
+                // Splash de boas-vindas
+                ImageIcon icon = new ImageIcon("../img/logo.jpg"); 
+                JOptionPane.showMessageDialog(
+                    null,
+                    "<html><h2>Bem-vindo ao Sistema de Controle de Estoque!</h2><br>Desenvolvido por Pedro Carvalho e Allan Prado.</html>",
+                    "Bem-vindo!",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    icon.getIconWidth() > 0 ? icon : null
+                );
                 new EstoqueGUI().setVisible(true);
             }
         });
